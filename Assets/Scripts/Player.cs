@@ -37,7 +37,137 @@ public class Player : MonoBehaviour
     }
    
 
-    private bool IsMyTurn()
+    public Vector3 BestWallTrue()
+    {
+        
+            float BestX = -100;
+            float BestY = -100;
+            double bestEvaluation = -100;
+            float z = -1;
+
+            for (float x  = -3f; x<= 4f; x++)
+            {
+                for (float y = -4f; y <= 3f; y++)
+                {
+                    
+                    if (gameManager.IsWallPositionValid(new Vector3(x, y, z), true))
+                    {
+                        GameObject go = gameManager.PlaceWall(new Vector3(x, y, z), true);
+
+                        int tmp = gameManager.EvaluationFunction();
+                        
+                        if (tmp == -10000)
+                        {
+                            Destroy(go);
+                            continue;
+                        }
+                        
+                        if (bestEvaluation < tmp)
+                        {
+                            bestEvaluation = tmp;
+                            BestX = x;
+                            BestY = y;
+                        }
+
+                        Destroy(go);
+                    }
+                }
+            }    
+            return new Vector3(BestX, BestY, z);
+    }
+    
+    public Vector3 BestWallFalse()
+    {
+        
+        
+            float BestX = -100;
+            float BestY = -100;
+            double bestEvaluation = -100;
+            float z = -1;
+            for (float y = -3f; y <= 4f; y++)
+            {
+                for (float x = -4f; x <= 3f; x++)
+                {
+                    
+                    if (gameManager.IsWallPositionValid(new Vector3(x, y, z), false))
+                    {
+                        GameObject go = gameManager.PlaceWall(new Vector3(x, y, z), false);
+                        int tmp = gameManager.EvaluationFunction();
+                        if (tmp == -10000)
+                        {
+                            Destroy(go);
+                            continue;
+                        }
+                        if (bestEvaluation < tmp)
+                        {
+                            bestEvaluation = tmp;
+                            BestX = x;
+                            BestY = y;
+
+                        }
+                        Destroy(go);
+                    }
+
+
+                }
+            }
+            return new Vector3(BestX, BestY, z);
+    }
+    
+
+    public void Greedy()
+    {
+        //Vector3 tmp1 = BestWallFalse();
+        Vector3 tmp2 = BestWallTrue();
+        Vector3 tmp1 = Vector3.zero;
+
+        Debug.Log("best wall yatay: " + tmp1);
+        Debug.Log("best wall dikey: " + tmp2);
+
+        GameObject go = gameManager.PlaceWall(tmp1, false);
+        int eval1 = gameManager.EvaluationFunction();
+        Destroy(go);
+
+        go = gameManager.PlaceWall(tmp2, true);
+        int eval2 = gameManager.EvaluationFunction();
+        Destroy(go);
+
+        int evalmove = gameManager.EvaluationFunction() + 1;
+
+        if (eval1 > eval2 && eval1> evalmove && GetWallCount() > 0)
+        {
+            gameManager.PlaceWall(tmp1, false);
+            DecreaseWall();
+        }
+        else if (eval2 >= eval1 && eval2 > evalmove && GetWallCount() > 0)
+        {
+            gameManager.PlaceWall(tmp2, true);
+            DecreaseWall();
+        }else {
+            string str = BFS()[0];
+
+            if (str == "U")
+            {
+                MoveUp();
+            }
+            else if (str == "D")
+            {
+                MoveDown();
+            }
+            else if (str == "L")
+            {
+                MoveLeft();
+            }
+            else if (str == "R")
+            {
+                MoveRight();
+            }
+        }
+
+
+    }
+
+    public bool IsMyTurn()
     {
         string playerName = this.gameObject.name.Replace("(Clone)", "");
         return GameObject.Find("PlayerTurn").GetComponent<TextMeshProUGUI>().text.Contains(playerName[playerName.Length -  1]);
@@ -563,24 +693,21 @@ public class Player : MonoBehaviour
     public void MoveLeft()
     {
         transform.position = transform.position + Vector3.left;
-        gameManager.ChangeTurn();
     }
 
     public void MoveUp()
     {
-        transform.position = transform.position + Vector3.up * playerDirection;
-        gameManager.ChangeTurn();
+        transform.position = transform.position + Vector3.up;
     }
 
     public void MoveRight()
     {
         transform.position = transform.position + Vector3.right;
-        gameManager.ChangeTurn();
     }
 
     public void MoveDown()
     {
-        transform.position = transform.position + Vector3.down * playerDirection;
+        transform.position = transform.position + Vector3.down;
     }
 
     public Vector3 GetPlayerPosition()
