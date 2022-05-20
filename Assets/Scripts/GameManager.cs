@@ -35,7 +35,6 @@ public class GameManager : MonoBehaviour
     
     private bool gameEnded;
     private bool gamePaused;
-    private bool greedyRunned = false;
     private void InitializeBoard()
     {
         for (int i = 0; i < BOARD_SIZE; i++)
@@ -324,17 +323,7 @@ public class GameManager : MonoBehaviour
             winStatus.GetComponent<TextMeshProUGUI>().SetText("Player 2 Wins !");
             gameEnded = true;
         }
-        
-        if (player2Controller.IsMyTurn())
-        {
-            ChangeTurn();
-            Debug.Log("greedy runned ! ");
-            player2Controller.Greedy();
-            
-        }
-        
     }
-
 
 
     public bool GetTurn()
@@ -383,29 +372,6 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1.0f;
         searchMethodModal.SetActive(false);
     }
-    public int EvaluationFunction()
-    {
-        int player1MoveCount = player1Controller.BFS().Count;
-        int player2MoveCount = player2Controller.BFS().Count;
-
-        if (player1MoveCount == 0 || player2MoveCount == 0)
-        {
-            return -10000;
-        }
-
-        if (player1Controller.IsMyTurn())
-        {
-            return player1MoveCount - player2MoveCount;
-
-        }
-        else if (player1Controller.IsMyTurn())
-        {
-            return player2MoveCount - player1MoveCount;
-        }
-
-        return -1000;
-    }
-
 
     public bool IsWallPositionValid(Vector3 pos, bool rotation)
     {
@@ -453,7 +419,7 @@ public class GameManager : MonoBehaviour
         return (onBoard && !nearWall);
     }
 
-    public GameObject PlaceWall(Vector3 pos, bool rotation)
+    public void PlaceWall(Vector3 pos, bool rotation)
     {
         /* rotation:
          * true -> vertical
@@ -462,12 +428,10 @@ public class GameManager : MonoBehaviour
         if (IsWallPositionValid(pos, rotation))
         {
             Vector3 wallPos = RoundHitPoint(pos);
-            GameObject placedWall = Instantiate(wall, wallPos, Quaternion.Euler(new Vector3(0, 0, rotation ? 90 : 0)));
-            return placedWall;
+            Instantiate(wall, wallPos, Quaternion.Euler(new Vector3(0, 0, rotation ? 90 : 0)));
         }
-        return null;
     }
-    /*
+
     public void RemoveWall(Vector3 pos)
     {
         Vector3 wallPos = RoundHitPoint(pos);
@@ -480,5 +444,4 @@ public class GameManager : MonoBehaviour
             }
         }
     }
-    */
 }
